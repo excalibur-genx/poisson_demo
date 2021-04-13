@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -q arm
+#PBS -N Firedrake
+#PBS -l walltime=00:30:00
+### PBS -l select=1 specify this at submit time
+
+# Must pass in:
+# NODES - Number of nodes to use
+# SPACING - Stride between MPI ranks
+# RESULTS_DIR - Directory to save results to
+# SOLVER_PARAMS - Name of solver parameter dict (escaped in "")
+
+
+cd $PBS_O_WORKDIR
+
+source $HOME/bin/fdactivate32
+aprun -b -n ${NODES} -N 1 mkdir -p /tmp/$USER
+aprun -b -n ${NODES} -N 1 $HOME/bin/fdactivate32
+
+#python profiling_script.py -N ${NODES}
+export CPU_PER_NODE=64
+export NCPU=$(python -c "print(int(${NODES}*${CPU_PER_NODE}/${SPACING}))")
+export NPERNODE=$(python -c "print(int(${CPU_PER_NODE}/${SPACING}))")
+export TSFACTOR=$(python -c "print(int(${NODES}/2 if ${NODES}>1 else 1))")
+export COMM="aprun -n ${NCPU} -N ${NPERNODE} -d ${SPACING} python \
+                poisson/poisson_gmg.py --resultsdir ${RESULTS_DIR} \
+                    --baseN 16 --nref 3 --solver_params \"${SOLVER_PARAMS}\" \
+                    --telescope_factor ${TSFACTOR} \
+                    -log_view :${RESULTS_DIR}/${NCPU}_logview.py:ascii_info_detail"
+echo $COMM > ${RESULTS_DIR}/${NODES}_${NCPU}_aprun.txt
+eval $COMM
+aprun -b -n 1 $HOME/bin/updatefdcache
