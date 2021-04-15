@@ -1,5 +1,4 @@
 #!/bin/bash
-## module load cray-python/3.8.2.1
 # :mem=500gb for 512GB nodes
 
 BATCH_NAME=poisson_multinode_patchpc_x

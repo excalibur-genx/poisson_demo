@@ -17,7 +17,6 @@ source $HOME/bin/fdactivate32
 aprun -b -n ${NODES} -N 1 mkdir -p /tmp/$USER
 aprun -b -n ${NODES} -N 1 $HOME/bin/fdactivate32
 
-#python profiling_script.py -N ${NODES}
 export CPU_PER_NODE=64
 export NCPU=$(python -c "print(int(${NODES}*${CPU_PER_NODE}/${SPACING}))")
 export NPERNODE=$(python -c "print(int(${CPU_PER_NODE}/${SPACING}))")
